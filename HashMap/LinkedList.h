@@ -14,7 +14,7 @@ namespace ByteC
 		template<typename Key, typename Value>
 		struct Node
 		{
-			std::pair<Key, Value> m_pair;
+			std::pair<const Key, Value> m_pair;
 			Node* m_next;
 		};
 
@@ -27,19 +27,19 @@ namespace ByteC
 			NodePtr m_ptr;
 
 		public:
-			Iterator(NodePtr* ptr)
+			Iterator(NodePtr ptr)
 				:m_ptr{ptr}
 			{
 			}
 
 			std::pair<const Key, Value>& operator*()
 			{
-				return m_iterator->m_pair;
+				return m_ptr->m_pair;
 			}
 
 			Iterator& operator++()
 			{
-				++m_ptr;
+				m_ptr = m_ptr->m_next;
 				return *this;
 			}
 
@@ -128,12 +128,12 @@ namespace ByteC
 			return static_cast<bool>(m_head);
 		}
 
-		Iterator begin()
+		Iterator<Key,Value> begin()
 		{
 			return Iterator<Key,Value>{ m_head };
 		}
 
-		Iterator end()
+		Iterator<Key,Value> end()
 		{
 			return Iterator<Key, Value>{ nullptr };
 		}

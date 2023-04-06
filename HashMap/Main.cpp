@@ -39,20 +39,42 @@ public:
 int main()
 {
 	Timer timer;
+	size_t sum{};
 
-	LinkedList<size_t, int> test;
-	
+	std::forward_list<size_t> test2;
+
 	timer.start();
-	for (size_t i{}; i < 1000000;++i)
+	for (size_t i{}; i < 10000000; ++i)
+	{
+		test2.emplace_front(i);
+	}
+	print(timer.getMillis());
+
+	timer.start();
+	for (auto& i : test2)
+	{
+		sum += i;
+	}
+	print(timer.getMillis());
+	print(sum);
+
+	LinkedList<size_t, size_t> test;
+
+	timer.start();
+	for (size_t i{}; i < 10000000; ++i)
 	{
 		test.insert(std::move(i), i * 10);
 	}
 	print(timer.getMillis());
 
-	for (auto& i: test)
+	timer.start();
+	for (auto& i : test)
 	{
-		print(test.get(i));
+		sum += i.second;
 	}
+	print(timer.getMillis());
+	print(sum);
+
 
 	return 0;
 }
