@@ -13,13 +13,15 @@ namespace ByteC
 	template<typename T>
 	struct Hash
 	{
+		
 		constexpr size_t operator()(const T& arg) const
 		{
-			size_t hash{ &arg };
+			size_t hash{ static_cast<size_t>(reinterpret_cast<std::uintptr_t>(&arg)) };
 			hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
-			hash = (hash >> 16) ^ hash) * 0x45d9f3b;
-			hash = (hash >> 16) ^ hash;
+			hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
+			hash = ((hash >> 16) ^ hash);
 			return hash;
+
 		}
 	};
 
@@ -62,11 +64,11 @@ namespace ByteC
 		}
 	};
 
-	template<typename Key, typename Item>
+	template<typename Key, typename Value>
 	struct Bucket
 	{
 		Key key;
-		Item item;
+		Value value;
 	};
 
 	struct Probe
@@ -79,64 +81,82 @@ namespace ByteC
 
 	template<
 		typename Key,
-		typename Item,
+		typename Value,
 		typename Hash,
-		typename Allocator = std::allocator<Bucket<Key, Item>>>
+		typename Allocator = std::allocator<Bucket<Key, Value>>>
 	class HashMap
 	{
 	private:
 		using BucketArray = Bucket*;
-		using StatusVector = std::vector<BucketStatus>;
-
+		
 		enum class BucketStatus : uint8_t
 		{
 			EMPTY,
 			DELETED,
 			FULL
 		};
+		
+		using StatusVector = std::vector<BucketStatus>;
 
-		Allocator allocator;
-		Probe probe;
-		Hash hasher;
-		BucketArray buckets;
-		StatusVector status;
-		size_t size;
-		size_t tableSize;
+		
+		Allocator m_Allocator;
+		Probe m_Probe;
+		Hash m_Hasher;
+		BucketArray m_Buckets;
+		StatusVector m_Status;
+		size_t m_Size;
+		size_t m_TableSize;
 
 	public:
-		HashMap() = default;
-
-		~HashMap() = default;
-
-		void insert(const Key& key, const Item& item)
+		//alocate table at size 8
+		HashMap(size_t tableSize)
+			:m_TableSize{ tableSize } 
 		{
-			insert(key, Item{ item });
+
 		}
 
-		void insert(Key&& key, Item&& item)
+		//call clear
+		virtual ~HashMap() = default;
+
+		void insert(const Key& key, const Value& value)
 		{
-			size_t hashValue{ hasher(index) % tableSize };
+			insert(Key{ key }, Value{ value });
+		}
+
+		//add key-value pairs to apopriate bucket
+		void insert(Key&& key, Value&& value)
+		{
+			size_t hashValue{ m_Hasher(index) % m_TableSize };
 			size_t probeValue{ hashValue };
+			//exchange while with for and rehash when for finishes
 			while (true)
 			{
 				if (status[probeValue] == BucketStatus::EMPTY)
 				{
 
 				}
+				else
+				{
+					//get new value from probe
+				}
 			}
 		}
 
-		void erase(size_t index)
+		//delete key-value pair from table(call destroy) and set status to deleted
+		void erase(const Key& key)
 		{
 		}
 
-		void find()
+		//returns iterator that points to the key-value pair if it exist if not return end
+		void find(const Key& key)
 		{
 		}
 
-		bool contains() const
+		
+		bool contains(const Key& key) const
 		{
 		}
+
 
 		void begin()
 		{
@@ -146,34 +166,41 @@ namespace ByteC
 		{
 		}
 
+		//create new table and rehash all elements to the new table and delete the old table
 		void rehash(size_t newTableSize)
 		{
-			BucketArray newTable{ arrays.push_back(std::allocator_traits<Allocator>::allocate(allocator, tableSize)) };
+			BucketArray newTable{ arrays.push_back(std::allocator_traits<Allocator>::allocate(m_Allocator, m_TableSize)) };
 			
 			//Carry all elemets with rehashing.
 
 			clear();
 
-			std::allocator_traits<Allocator>::deallocate(allocator, removal, arraySize);
+			std::allocator_traits<Allocator>::deallocate(m_Allocator, removal, arraySize);
 
 			buckets = newTable;
 		}
 
 	private:
-		void construct(size_t index, Item&& value)
+		//craetes bucket at index and stores in it 
+		void construct(size_t index, Value&& value)
 		{
-			std::allocator_traits<Allocator>::construct(allocator, buckets[index], std::move(item));
+			//crate bucket and pass to construct
+
+			std::allocator_traits<Allocator>::construct(allocator, buckets[index], std::move(value));
 		}
 
+		//deletes bucket at index
 		void destroy(size_t index)
 		{
 			std::allocator_traits<Allocator>::destroy(allocator, buckets[index]);
 		}
 
+		//checks load and rehashes it if needed
 		void checkLoad()
 		{
 		}
 
+		//deletes buckets and creats new with default size
 		void clear()
 		{
 		}
