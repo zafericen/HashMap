@@ -1,0 +1,39 @@
+﻿  HashMap.cpp
+C:\Users\zafer\Masaüstü\HashMap\HashMap\HashMap.h(204,38): error C2672: 'std::_Default_allocator_traits<_Alloc>::construct': no matching overloaded function found
+          with
+          [
+              _Alloc=std::allocator<ByteC::Bucket<size_t,size_t>>
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.34.31933\include\xmemory(673,30): message : could be 'void std::_Default_allocator_traits<_Alloc>::construct(_Alloc &,_Objty *const ,_Types &&...)'
+          with
+          [
+              _Alloc=std::allocator<ByteC::Bucket<size_t,size_t>>
+          ]
+C:\Users\zafer\Masaüstü\HashMap\HashMap\HashMap.h(204,38): message : 'void std::_Default_allocator_traits<_Alloc>::construct(_Alloc &,_Objty *const ,_Types &&...)': could not deduce template argument for '_Objty *const ' from 'ByteC::Bucket<Key,Value>'
+          with
+          [
+              _Alloc=std::allocator<ByteC::Bucket<size_t,size_t>>
+          ]
+          and
+          [
+              Key=size_t,
+              Value=size_t
+          ]
+C:\Users\zafer\Masaüstü\HashMap\HashMap\HashMap.h(202,1): message : while compiling class template member function 'void ByteC::HashMap<size_t,size_t,ByteC::Hash<size_t>,std::allocator<ByteC::Bucket<Key,Value>>>::construct(size_t,Key &&,Value &&)'
+          with
+          [
+              Key=size_t,
+              Value=size_t
+          ]
+C:\Users\zafer\Masaüstü\HashMap\HashMap\HashMap.h(142,15): message : see reference to function template instantiation 'void ByteC::HashMap<size_t,size_t,ByteC::Hash<size_t>,std::allocator<ByteC::Bucket<Key,Value>>>::construct(size_t,Key &&,Value &&)' being compiled
+          with
+          [
+              Key=size_t,
+              Value=size_t
+          ]
+C:\Users\zafer\Masaüstü\HashMap\HashMap\HashMap.cpp(6,36): message : see reference to class template instantiation 'ByteC::HashMap<size_t,size_t,ByteC::Hash<size_t>,std::allocator<ByteC::Bucket<Key,Value>>>' being compiled
+          with
+          [
+              Key=size_t,
+              Value=size_t
+          ]

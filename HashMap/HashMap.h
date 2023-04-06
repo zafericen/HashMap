@@ -7,8 +7,10 @@
 #include <vector>
 #include <string>
 
+
 namespace ByteC
 {
+	inline constexpr size_t MAX_PROB_ITERATION{ 100 };
 
 	template<typename T>
 	struct Hash
@@ -67,8 +69,10 @@ namespace ByteC
 	template<typename Key, typename Value>
 	struct Bucket
 	{
-		Key key;
-		Value value;
+		using Pair = std::pair<Key,Value>;
+		Pair m_Pair;
+
+	
 	};
 
 	struct Probe
@@ -82,12 +86,13 @@ namespace ByteC
 	template<
 		typename Key,
 		typename Value,
-		typename Hash,
+		typename Hash = Hash<Key>,
 		typename Allocator = std::allocator<Bucket<Key, Value>>>
 	class HashMap
 	{
 	private:
-		using BucketArray = Bucket*;
+		using Pair = std::pair<Key,Value>;
+		using BucketArray = Bucket<Key,Value>*;
 		
 		enum class BucketStatus : uint8_t
 		{
@@ -109,12 +114,12 @@ namespace ByteC
 
 	public:
 		//alocate table at size 8
-		HashMap(size_t tableSize)
+		HashMap(size_t tableSize = 8)
 			:m_TableSize{ tableSize } 
 		{
 
 		}
-
+		
 		//call clear
 		virtual ~HashMap() = default;
 
@@ -126,20 +131,24 @@ namespace ByteC
 		//add key-value pairs to apopriate bucket
 		void insert(Key&& key, Value&& value)
 		{
-			size_t hashValue{ m_Hasher(index) % m_TableSize };
-			size_t probeValue{ hashValue };
-			//exchange while with for and rehash when for finishes
-			while (true)
-			{
-				if (status[probeValue] == BucketStatus::EMPTY)
+			size_t hashValue{ m_Hasher(key) % m_TableSize };
+			size_t probeValue{ hashValue % m_TableSize };
+			
+			//exchange while with for and rehash when for finishes 
+			for(size_t i =1;i <=MAX_PROB_ITERATION ;i++){
+				if (m_Status[probeValue] == BucketStatus::EMPTY)
 				{
-
+					m_Status[probeValue] = BucketStatus::FULL;
+					construct(probeValue, std::move(key), std::move(value));
+					break;
 				}
-				else
-				{
-					//get new value from probe
-				}
+				probeValue = m_Probe(hashValue,i)%m_TableSize;
 			}
+
+			rehash(m_TableSize*2);
+			
+			insert(std::move(key), std::move(value));
+			
 		}
 
 		//delete key-value pair from table(call destroy) and set status to deleted
@@ -169,32 +178,38 @@ namespace ByteC
 		//create new table and rehash all elements to the new table and delete the old table
 		void rehash(size_t newTableSize)
 		{
-			BucketArray newTable{ arrays.push_back(std::allocator_traits<Allocator>::allocate(m_Allocator, m_TableSize)) };
+			BucketArray tempArray{ m_Buckets };
 			
+			m_Buckets = std::allocator_traits<Allocator>::allocate(m_Allocator, m_TableSize);
+			StatusVector tempStatus = std::move(m_Status);
+			
+			for (size_t i =0;i< m_TableSize;i++)
+			{
+				if (tempStatus[i] == BucketStatus::FULL)
+				{
+					insert(std::move(tempArray[i].pair.first), std::move(tempArray[i].pair.second));
+					std::allocator_traits<Allocator>::destroy(m_Allocator, tempArray[i]);
+				}
+			}
+			m_TableSize = newTableSize;
 			//Carry all elemets with rehashing.
-
-			clear();
-
-			std::allocator_traits<Allocator>::deallocate(m_Allocator, removal, arraySize);
-
-			buckets = newTable;
+			std::allocator_traits<Allocator>::deallocate(m_Allocator, tempArray, m_TableSize);
 		}
 
 	private:
 		//craetes bucket at index and stores in it 
-		void construct(size_t index, Value&& value)
+		void construct(size_t index, Key&& key, Value&& value)
 		{
 			//crate bucket and pass to construct
-
-			std::allocator_traits<Allocator>::construct(allocator, buckets[index], std::move(value));
+			std::allocator_traits<Allocator>::construct(m_Allocator, m_Buckets[index], Bucket<Key, Value>{ Pair{ std::move(key),std::move(value) } });
 		}
 
 		//deletes bucket at index
 		void destroy(size_t index)
 		{
-			std::allocator_traits<Allocator>::destroy(allocator, buckets[index]);
+			std::allocator_traits<Allocator>::destroy(m_Allocator, m_Buckets[index]);
 		}
-
+		
 		//checks load and rehashes it if needed
 		void checkLoad()
 		{
