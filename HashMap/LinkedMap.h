@@ -1,14 +1,15 @@
-#ifndef LINKEDLIST_H
-#define LINKEDLIST_H
+#ifndef LINKEDMAP_H
+#define LINKEDMAP_H
 
 #include <type_traits>
 #include <utility>
+#include <cstdlib>
 
 namespace ByteC
 {
 
 	template<typename Key, typename Value>
-	class LinkedList
+	class LinkedMap
 	{
 	private:
 		template<typename Key, typename Value>
@@ -57,19 +58,24 @@ namespace ByteC
 		NodePtr m_head{};
 
 	public:
-		LinkedList() = default;
+		LinkedMap() = default;
 
-		LinkedList(const LinkedList& linkedList) = delete;
+		LinkedMap(const LinkedMap& linkedList) = delete;
 
-		LinkedList(LinkedList&& linkedList):
+		LinkedMap(LinkedMap&& linkedList):
 			m_head{linkedList.m_head}
 		{
 			linkedList.m_head = nullptr;
 		}
 
-		~LinkedList()
+		~LinkedMap()
 		{
 			clear();
+		}
+
+		void insert(const Key& key, const Value& value)
+		{
+			insert(Key{ key }, Value{ value });
 		}
 
 		void insert(Key&& key, Value&& value)
@@ -79,11 +85,11 @@ namespace ByteC
 			m_head = newHead;
 		}
 
-		void remove(const Key& key)
+		void erase(const Key& key)
 		{
 			if (m_head->m_pair.first == key)
 			{
-				NodePtr newHead{ m_head->next };
+				NodePtr newHead{ m_head->m_next };
 				destroyNode(m_head);
 				m_head = newHead;
 			}
@@ -92,7 +98,7 @@ namespace ByteC
 				NodePtr iterator{ m_head };
 				while (iterator->m_next)
 				{
-					if (iterator->next->m_pair.first == key)
+					if (iterator->m_next->m_pair.first == key)
 					{
 						NodePtr removal{ iterator->m_next };
 						iterator->m_next = removal->m_next;
@@ -103,7 +109,7 @@ namespace ByteC
 			}
 		}
 
-		Value& get(const Key& key)
+		Value& at(const Key& key)
 		{
 			NodePtr iterator{ m_head };
 			while (iterator->m_next)
@@ -114,18 +120,30 @@ namespace ByteC
 				}
 				iterator = iterator->m_next;
 			}
-
-			//assert here;
 		}
 
-		const Value& get(const Key& key) const
+		const Value& at(const Key& key) const
 		{
 			return get(key);
 		}
 
+		Iterator<Key, Value> find(const Key& key)
+		{
+			NodePtr iterator{ m_head };
+			while (iterator->m_next)
+			{
+				if (iterator->m_pair.first == key)
+				{
+					return Iterator<Key,Value>{iterator};
+				}
+				iterator = iterator->m_next;
+			}
+			return Iterator<Key, Value>{nullptr};
+		}
+
 		bool empty() const
 		{
-			return static_cast<bool>(m_head);
+			return !static_cast<bool>(m_head);
 		}
 
 		Iterator<Key,Value> begin()
@@ -138,6 +156,21 @@ namespace ByteC
 			return Iterator<Key, Value>{ nullptr };
 		}
 
+		void clear()
+		{
+			if (!empty())
+			{
+				NodePtr iterator{ m_head };
+				while (iterator->m_next)
+				{
+					NodePtr next{ iterator->m_next };
+					delete iterator;
+					iterator = next;
+				}
+			}
+			m_head = nullptr;
+		}
+
 	private:
 		NodePtr createNode(Key&& key, Value&& value)
 		{
@@ -147,20 +180,6 @@ namespace ByteC
 		void destroyNode(NodePtr nodePtr)
 		{
 			delete nodePtr;
-		}
-
-		void clear()
-		{
-			if (!empty())
-			{
-				NodePtr iterator{ m_head };
-				while (iterator->m_next)
-				{
-					NodePtr next{ m_head->m_next };
-					delete iterator;
-					iterator = next;
-				}
-			}
 		}
 	};
 }

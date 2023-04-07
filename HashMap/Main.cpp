@@ -7,7 +7,8 @@
 #include <vector>
 #include <bitset>
 
-#include "LinkedList.h"
+#include "LinkedMap.h"
+#include "HashMap.h"
 
 #define print(arg) std::cout<<(arg)<<std::endl;
 
@@ -36,45 +37,29 @@ public:
 	}
 };
 
+
 int main()
 {
 	Timer timer;
-	size_t sum{};
 
-	std::forward_list<size_t> test2;
-
+	std::unordered_map<int, int,Hash<int>> table2;
 	timer.start();
-	for (size_t i{}; i < 10000000; ++i)
+	for (int i{}; i < 1000000; ++i)
 	{
-		test2.emplace_front(i);
+		int random{ rand() % 10000 };
+		table2[random] = i * 10;
 	}
 	print(timer.getMillis());
 
-	timer.start();
-	for (auto& i : test2)
-	{
-		sum += i;
-	}
-	print(timer.getMillis());
-	print(sum);
-
-	LinkedList<size_t, size_t> test;
+	HashMap<int, int> table;
 
 	timer.start();
-	for (size_t i{}; i < 10000000; ++i)
+	for (int i{}; i < 1000000; ++i)
 	{
-		test.insert(std::move(i), i * 10);
+		int random{ rand() % 10000 };
+		table.insert(random, i * 10);
 	}
 	print(timer.getMillis());
-
-	timer.start();
-	for (auto& i : test)
-	{
-		sum += i.second;
-	}
-	print(timer.getMillis());
-	print(sum);
-
-
+	
 	return 0;
 }
