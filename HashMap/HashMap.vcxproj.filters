@@ -15,12 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="HashMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="HashMap.h">
+    <ClInclude Include="hash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stair_map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stair_vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="type_info.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
